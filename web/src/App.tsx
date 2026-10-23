@@ -3,6 +3,7 @@ import { frameFor, type Vowel } from './engine/mapping'
 import { player } from './engine/player'
 import { PARAM_BY_ID } from './params/schema'
 import { useListening } from './state/useListening'
+import { useMacros } from './state/useMacros'
 import { useParams } from './state/useParams'
 import { ExplainCard } from './ui/ExplainCard'
 import { ListeningBar } from './ui/ListeningBar'
@@ -11,7 +12,14 @@ import { Stage } from './ui/Stage'
 import { TopBar } from './ui/TopBar'
 
 export function App() {
-  const { values, setValue, resetValue, resetAll, selectedId, setSelectedId, showAdvanced, setShowAdvanced } = useParams()
+  const { values, setValue, setValues, resetValue, resetAll, selectedId, setSelectedId, showAdvanced, setShowAdvanced } = useParams()
+
+  const macros = useMacros(values, setValues)
+  const { resetMacros } = macros
+  const handleResetAll = () => {
+    resetAll()
+    resetMacros()
+  }
 
   const [vowel, setVowel] = useState<Vowel>('ㅏ')
   const [playing, setPlaying] = useState(false)
@@ -44,7 +52,7 @@ export function App() {
 
   return (
     <div className="app">
-      <TopBar onResetAll={resetAll} vowel={vowel} setVowel={setVowel} playing={playing} onTogglePlay={togglePlay} />
+      <TopBar onResetAll={handleResetAll} vowel={vowel} setVowel={setVowel} playing={playing} onTogglePlay={togglePlay} />
       <ListeningBar settings={listening.settings} update={listening.update} />
       <main className="layout">
         <aside className="col-params" aria-label="파라미터">
@@ -56,6 +64,7 @@ export function App() {
             showAdvanced={showAdvanced}
             setShowAdvanced={setShowAdvanced}
             onSelect={select}
+            macros={macros}
           />
         </aside>
         <section className="col-stage" aria-label="시각화">

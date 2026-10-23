@@ -439,3 +439,73 @@ input[type='range']:focus-visible { outline: 2px solid var(--focus); outline-off
 .switch input:checked + .switch-track { background: var(--primary); border-color: var(--primary); }
 .switch input:checked + .switch-track::after { transform: translateX(13px); background: var(--primary-text); }
 .switch input:focus-visible + .switch-track { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ── macros ── */
+:root {
+  --c-macro: #d6538a;
+  --up: #c2410c;
+  --down: #1d6fb8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-macro: #f07aa8;
+    --up: #fb923c;
+    --down: #6aa8e6;
+  }
+}
+.group-macro { --accent: var(--c-macro); }
+.preset-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.preset-row select { flex: 1 1 140px; min-width: 0; padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.preset-row button { flex: 0 0 auto; }
+.preset-desc { font-size: 0.8rem; color: var(--text-dim); margin: 0 0 4px; }
+.macro-row input[type='range'] {
+  background: linear-gradient(to right, var(--surface-2) var(--a), var(--accent) var(--a), var(--accent) var(--b), var(--surface-2) var(--b));
+}
+.macro-label { cursor: default; }
+.info-btn { border: 0; background: none; padding: 0 4px; line-height: 1.4; color: var(--text-dim); border-radius: 50%; }
+.info-btn.on { color: var(--accent); }
+.macro-explain { font-size: 0.82rem; color: var(--text-dim); background: var(--surface-2); border-radius: var(--radius); padding: 6px 10px; margin: 4px 0 2px; overflow-wrap: anywhere; }
+.emotion-block { padding-top: 6px; border-top: 1px solid var(--border); margin-bottom: 6px; }
+.emotion-head { display: flex; align-items: center; gap: 4px; min-height: 24px; }
+.emotion-title { font-weight: 600; }
+.emo-chip { padding: 3px 12px; border-radius: 999px; font-size: 0.88rem; }
+.emo-chip.active { background: var(--accent); border-color: var(--accent); color: var(--primary-text); font-weight: 600; }
+.emo-chip.active:hover:not(:disabled) { background: var(--accent); filter: brightness(1.08); }
+
+.change-box {
+  background: var(--surface);
+  border: 1px solid var(--c-macro);
+  border-radius: var(--radius);
+  padding: 8px 12px 10px;
+  animation: change-in 0.3s ease-out;
+}
+.change-box header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.change-box h3 { font-size: 0.88rem; line-height: 1.4; }
+.change-count { font-weight: 400; color: var(--text-dim); font-size: 0.8rem; }
+.change-close { border: 0; background: none; padding: 0 6px; color: var(--text-dim); flex: none; }
+.change-box ul { display: flex; flex-direction: column; }
+.change-item {
+  display: flex; align-items: baseline; gap: 8px; width: 100%; text-align: left;
+  border: 0; border-radius: 6px; background: none; padding: 3px 6px; margin: 0 -6px; width: calc(100% + 12px); font-size: 0.85rem;
+}
+.change-label { flex: 1 1 auto; min-width: 0; font-weight: 600; }
+.change-vals { flex: 0 1 auto; font-variant-numeric: tabular-nums; color: var(--text-dim); text-align: right; }
+.change-arrow { flex: none; width: 1.2em; text-align: center; font-weight: 800; }
+.change-arrow.up, .recent-badge.up { color: var(--up); }
+.change-arrow.down, .recent-badge.down { color: var(--down); }
+@keyframes change-in { from { opacity: 0; transform: translateY(-4px); } }
+
+/* 매크로가 방금 움직인 파라미터 슬라이더 */
+.param-row.recent { position: relative; }
+.recent-pulse {
+  position: absolute; inset: 0; border-radius: var(--radius); pointer-events: none;
+  background: color-mix(in srgb, var(--c-macro) 30%, transparent);
+  animation: recent-pulse 1.5s ease-out forwards;
+}
+.recent-badge { display: inline-block; margin-left: 4px; font-weight: 800; animation: recent-badge 3s ease-out forwards; }
+@keyframes recent-pulse { from { opacity: 1; } to { opacity: 0; } }
+@keyframes recent-badge { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .change-box { animation: none; }
+  .recent-pulse { animation-duration: 0.01s; }
+}

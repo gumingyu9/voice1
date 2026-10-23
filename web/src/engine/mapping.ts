@@ -126,6 +126,10 @@ export function frameFor(v: ParamValues, vowel: Vowel): FrameParams {
     fnz: 270 + 380 * nas,
     bnz: 100,
     gain: OUTPUT_GAIN * Math.pow(10, gainDb / 20),
+    af: 0,
+    fricF: 5000,
+    fricBw: 2500,
+    ab: 0,
   }
 }
 

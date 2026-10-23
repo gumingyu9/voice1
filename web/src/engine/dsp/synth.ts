@@ -47,6 +47,8 @@ export class Synth {
   private noiseHp = 0
   private noisePrev = 0
 
+  private fric = new Resonator()
+  private fricPrev = 0
   private nasalZero = new AntiResonator()
   private nasalPole = new Resonator()
   private formants: Resonator[] = Array.from({ length: N_FORMANTS }, () => new Resonator())
@@ -87,6 +89,7 @@ export class Synth {
     for (let i = 0; i < N_FORMANTS; i++) this.formants[i].set(f.formants[i], f.bandwidths[i], this.fs)
     this.nasalPole.set(f.fnp, f.bnp, this.fs)
     this.nasalZero.set(f.fnz, f.bnz, this.fs)
+    this.fric.set(f.fricF, f.fricBw, this.fs)
   }
 
   private smooth(): void {
@@ -113,6 +116,11 @@ export class Synth {
     c.fnz = s(c.fnz, t.fnz)
     c.bnz = s(c.bnz, t.bnz)
     c.gain = s(c.gain, t.gain)
+    // 잡음 진폭은 빠르게 변해야 파열음이 뭉개지지 않는다
+    c.af = t.af
+    c.ab = t.ab
+    c.fricF = s(c.fricF, t.fricF)
+    c.fricBw = s(c.fricBw, t.fricBw)
     this.updateCoefficients()
   }
 
@@ -185,6 +193,15 @@ export class Synth {
       // ── 필터 (성도) ──
       let y = this.nasalPole.process(this.nasalZero.process(this.tiltY))
       for (let k = N_FORMANTS - 1; k >= 0; k--) y = this.formants[k].process(y)
+
+      // ── 병렬 잡음 경로 (자음) ──
+      if (f.af > 0 || f.ab > 0) {
+        const w = this.rand() * 2 - 1
+        // 1차 차분으로 저역을 덜어낸 뒤 공명기로 마찰 잡음의 색을 입힌다
+        const hp = w - this.fricPrev
+        this.fricPrev = w
+        y += this.fric.process(hp) * f.af * 6 + hp * f.ab
+      }
 
       out[n] = Math.tanh(y * f.gain)
 

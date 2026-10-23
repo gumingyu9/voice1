@@ -55,7 +55,17 @@ export function useParams() {
 
   const resetAll = useCallback(() => setValues({ ...DEFAULT_VALUES }), [])
 
-  return { values, setValue, resetValue, resetAll, selectedId, setSelectedId, showAdvanced, setShowAdvanced }
+  /** 모든 값을 한 번에 교체한다 (매크로·프리셋용). 범위·step은 한 번 더 정규화한다. */
+  const replaceValues = useCallback((next: ParamValues) => {
+    const out: ParamValues = { ...DEFAULT_VALUES }
+    for (const p of PARAMS) {
+      const v = next[p.id]
+      if (Number.isFinite(v)) out[p.id] = normalize(p.id, v)
+    }
+    setValues(out)
+  }, [])
+
+  return { values, setValue, setValues: replaceValues, resetValue, resetAll, selectedId, setSelectedId, showAdvanced, setShowAdvanced }
 }
 
 export type ParamsState = ReturnType<typeof useParams>

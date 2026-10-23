@@ -21,6 +21,11 @@ export interface FrameParams {
   fnz: number // 비강 영점 (Hz). fnp 와 같으면 서로 상쇄 = 비음 없음
   bnz: number
   gain: number // 최종 출력 이득 (선형)
+  // ── 자음용 마찰·파열 잡음 (성도 공명기를 거치지 않는 병렬 경로) ──
+  af: number // 마찰 잡음 진폭 (ㅅ ㅈ 등, 좁은 틈에서 생기는 난류)
+  fricF: number // 마찰 잡음의 중심 주파수 (Hz)
+  fricBw: number // 마찰 잡음 대역폭 (Hz)
+  ab: number // 파열(터짐) 잡음 진폭, 평탄한 스펙트럼
 }
 
 /** 선형 보간 (스무딩·궤적 보간용) */
@@ -45,6 +50,10 @@ export function lerpFrame(a: FrameParams, b: FrameParams, k: number, out: FrameP
   out.fnz = l(a.fnz, b.fnz)
   out.bnz = l(a.bnz, b.bnz)
   out.gain = l(a.gain, b.gain)
+  out.af = l(a.af, b.af)
+  out.fricF = l(a.fricF, b.fricF)
+  out.fricBw = l(a.fricBw, b.fricBw)
+  out.ab = l(a.ab, b.ab)
   return out
 }
 

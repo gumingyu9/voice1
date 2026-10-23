@@ -332,5 +332,5 @@ export function toPosition(p: ParamDef, value: number): number {
 
 export function fromPosition(p: ParamDef, pos: number): number {
   const raw = p.scale === 'log' ? p.min * Math.pow(p.max / p.min, pos) : p.min + pos * (p.max - p.min)
-  return Math.min(p.max, Math.max(p.min, Math.round(raw / p.step) * p.step))
+  return Math.min(p.max, Math.max(p.min, Number((Math.round(raw / p.step) * p.step).toFixed(6))))
 }

@@ -9,14 +9,19 @@ interface Props {
   onChange: (id: string, v: number) => void
   onReset: (id: string) => void
   onSelect: (id: string) => void
+  /** 마지막 매크로 동작으로 이 파라미터가 바뀐 방향 (없으면 undefined) */
+  recentDir?: 'up' | 'down'
+  /** 그 동작의 시각: 바뀔 때마다 애니메이션을 다시 시작시키는 key */
+  recentAt?: number
 }
 
-export function ParamSlider({ param: p, value, selected, onChange, onReset, onSelect }: Props) {
+export function ParamSlider({ param: p, value, selected, onChange, onReset, onSelect, recentDir, recentAt }: Props) {
   const isDefault = value === p.default
   const [leftEnd, rightEnd] = p.ends ?? [formatValue(p, p.min), formatValue(p, p.max)]
 
   return (
-    <div className={`param-row${selected ? ' selected' : ''}`}>
+    <div className={`param-row${selected ? ' selected' : ''}${recentDir ? ' recent' : ''}`}>
+      {recentDir && <span key={recentAt} className="recent-pulse" aria-hidden="true" />}
       <div className="param-head">
         <button type="button" className="param-label" onClick={() => onSelect(p.id)} aria-pressed={selected}>
           {p.label}
@@ -29,6 +34,11 @@ export function ParamSlider({ param: p, value, selected, onChange, onReset, onSe
         <span className="param-value">
           {formatValue(p, value)}
           {p.unit && <span className="param-unit"> {p.unit}</span>}
+          {recentDir && (
+            <span key={recentAt} className={`recent-badge ${recentDir}`} aria-label={recentDir === 'up' ? '올라감' : '내려감'}>
+              {recentDir === 'up' ? '↑' : '↓'}
+            </span>
+          )}
         </span>
         <button
           type="button"
