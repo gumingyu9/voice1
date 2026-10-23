@@ -1,3 +1,4 @@
+import type React from 'react'
 import { fromPosition, toPosition, type ParamDef } from '../params/schema'
 import { formatValue } from './format'
 
@@ -19,6 +20,11 @@ export function ParamSlider({ param: p, value, selected, onChange, onReset, onSe
       <div className="param-head">
         <button type="button" className="param-label" onClick={() => onSelect(p.id)} aria-pressed={selected}>
           {p.label}
+          {p.speechOnly && (
+            <span className="speech-tag" title="단어·문장 재생에서만 적용">
+              문장
+            </span>
+          )}
         </button>
         <span className="param-value">
           {formatValue(p, value)}
@@ -41,6 +47,7 @@ export function ParamSlider({ param: p, value, selected, onChange, onReset, onSe
         max={1000}
         step={1}
         value={Math.round(toPosition(p, value) * 1000)}
+        style={{ '--fill': `${toPosition(p, value) * 100}%` } as React.CSSProperties}
         onChange={(e) => onChange(p.id, fromPosition(p, Number(e.target.value) / 1000))}
         onFocus={() => onSelect(p.id)}
         aria-label={p.label}

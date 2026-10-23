@@ -4,12 +4,12 @@ import { formatValue, formatWithUnit } from './format'
 interface Props {
   selectedId: string
   values: Record<string, number>
-  onChange: (id: string, v: number) => void
+  onCompare: (id: string, v: number) => void
 }
 
 const SUPPORT_LABEL: Record<EngineSupport, string> = { full: '지원', approx: '근사', none: '미지원' }
 
-export function ExplainCard({ selectedId, values, onChange }: Props) {
+export function ExplainCard({ selectedId, values, onCompare }: Props) {
   const p = PARAM_BY_ID[selectedId]
   if (!p) return null
   const rows = [
@@ -62,13 +62,14 @@ export function ExplainCard({ selectedId, values, onChange }: Props) {
             key={v}
             type="button"
             className={values[p.id] === v ? 'active' : undefined}
-            onClick={() => onChange(p.id, v)}
-            title="값을 이 값으로 설정 (소리 재생은 이후 단계)"
+            onClick={() => onCompare(p.id, v)}
+            title="이 값으로 바꿔서 들어보기"
           >
             {formatWithUnit(p, v)}
           </button>
         ))}
       </div>
+      {p.speechOnly && <p className="hint speech-only">지속 모음에서는 효과가 없고, 단어·문장 재생(P2)에서 적용됩니다.</p>}
       <p className="hint">
         기본값 {formatValue(p, p.default)}
         {p.unit && ` ${p.unit}`}

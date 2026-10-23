@@ -1,15 +1,17 @@
 import { useState } from 'react'
+import { VOWELS, type Vowel } from '../engine/mapping'
 
 interface Props {
   onResetAll: () => void
+  vowel: Vowel
+  setVowel: (v: Vowel) => void
+  playing: boolean
+  onTogglePlay: () => void
 }
 
-const VOWELS = ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅡ', 'ㅣ', 'ㅔ']
-
-export function TopBar({ onResetAll }: Props) {
+export function TopBar({ onResetAll, vowel, setVowel, playing, onTogglePlay }: Props) {
   const [text, setText] = useState('')
   const [engine, setEngine] = useState<'A' | 'B'>('A')
-  const [vowel, setVowel] = useState(VOWELS[0])
 
   return (
     <header className="topbar">
@@ -40,7 +42,7 @@ export function TopBar({ onResetAll }: Props) {
 
         <label className="vowel-select">
           지속 모음
-          <select value={vowel} onChange={(e) => setVowel(e.target.value)}>
+          <select value={vowel} onChange={(e) => setVowel(e.target.value as Vowel)}>
             {VOWELS.map((v) => (
               <option key={v} value={v}>
                 {v}
@@ -48,8 +50,8 @@ export function TopBar({ onResetAll }: Props) {
             ))}
           </select>
         </label>
-        <button type="button" disabled title="P1에서 구현" aria-pressed="false">
-          지속 모음 재생
+        <button type="button" className={playing ? 'primary' : undefined} onClick={onTogglePlay} aria-pressed={playing}>
+          {playing ? '■ 정지' : '▶ 지속 모음 재생'}
         </button>
 
         <button type="button" onClick={onResetAll}>

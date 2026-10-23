@@ -1,24 +1,52 @@
-import { useState } from 'react'
-import { ANATOMY_LABELS, PARAM_BY_ID, PARAMS, type AnatomyPart } from '../params/schema'
+import { useMemo, useState } from 'react'
+import { sourceFilterSpectrum } from '../engine/analysis'
+import type { FrameParams } from '../engine/dsp/frame'
+import { VOWEL_FORMANTS, VOWELS, vowelFormants } from '../engine/mapping'
+import { player } from '../engine/player'
+import { GlottalPulseView, LiveSpectrogram, SourceFilterView, VowelChart } from '../viz'
+import { AnatomyView } from '../anatomy/AnatomyView'
+import { ANATOMY_LABELS, PARAM_BY_ID, PARAMS, type AnatomyPart, type ParamValues } from '../params/schema'
 
 interface Props {
   selectedId: string
   onSelect: (id: string) => void
+  values: ParamValues
+  vowel: string
+  playing: boolean
+  frame: FrameParams
 }
+
+type VizTab = 'vowel' | 'pulse' | 'live'
+const VIZ_TABS: { id: VizTab; label: string }[] = [
+  { id: 'vowel', label: '모음 사각도' },
+  { id: 'pulse', label: '성대 펄스' },
+  { id: 'live', label: '실시간 스펙트로그램' },
+]
+const REFERENCE = VOWELS.map((v) => ({ vowel: v, f1: VOWEL_FORMANTS[v][0], f2: VOWEL_FORMANTS[v][1] }))
 
 const ALL_PARTS = Object.keys(ANATOMY_LABELS) as AnatomyPart[]
 
-export function Stage({ selectedId, onSelect }: Props) {
+export function Stage({ selectedId, onSelect, values, vowel, playing, frame }: Props) {
+  const [tab, setTab] = useState<VizTab>('vowel')
+  const spectrum = useMemo(() => sourceFilterSpectrum(frame, 5000), [frame])
+  const vowelPoints = useMemo(
+    () => VOWELS.map((v) => { const f = vowelFormants(values, v).formants; return { vowel: v, f1: f[0], f2: f[1] } }),
+    [values],
+  )
   const [part, setPart] = useState<AnatomyPart | null>(null)
   const selected = PARAM_BY_ID[selectedId]
   const related = new Set<AnatomyPart>(selected?.anatomy ?? [])
+  const highlight = [...new Set<AnatomyPart>([...related, ...(part ? [part] : [])])]
+  const togglePart = (a: AnatomyPart) => setPart(part === a ? null : a)
   const partParams = part ? PARAMS.filter((p) => p.anatomy.includes(part)) : []
 
   return (
     <div className="stage">
-      <section className="stage-box">
+      <section className="stage-box anatomy-box">
         <h2>해부도</h2>
-        <p className="placeholder-text">단면도 SVG는 P1에서 추가</p>
+        <div className={`anatomy-wrap group-${selected?.group}`}>
+          <AnatomyView values={values} highlight={highlight} onPartClick={togglePart} vowel={vowel} playing={playing} />
+        </div>
         <p className="hint">
           선택한 파라미터: <strong>{selected?.label}</strong> — 부위를 누르면 연결된 파라미터가 나타납니다.
         </p>
@@ -28,7 +56,7 @@ export function Stage({ selectedId, onSelect }: Props) {
               <button
                 type="button"
                 className={`chip group-${selected?.group}${related.has(a) ? ' related' : ''}${part === a ? ' active' : ''}`}
-                onClick={() => setPart(part === a ? null : a)}
+                onClick={() => togglePart(a)}
                 aria-pressed={part === a}
               >
                 {ANATOMY_LABELS[a]}
@@ -57,8 +85,21 @@ export function Stage({ selectedId, onSelect }: Props) {
       </section>
 
       <section className="stage-box">
-        <h2>음향 시각화</h2>
-        <p className="placeholder-text">음원 × 필터 = 결과 스펙트럼, 스펙트로그램, 모음 사각도 — P1에서 추가</p>
+        <h2>음향 — 음원 × 필터 = 결과</h2>
+        <SourceFilterView spectrum={spectrum} maxHz={5000} />
+      </section>
+
+      <section className="stage-box">
+        <div className="viz-tabs" role="tablist">
+          {VIZ_TABS.map((t) => (
+            <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'active' : undefined} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        {tab === 'vowel' && <VowelChart points={vowelPoints} reference={REFERENCE} current={vowel} />}
+        {tab === 'pulse' && <GlottalPulseView rd={frame.rd} f0={frame.f0} />}
+        {tab === 'live' && <LiveSpectrogram analyser={player.analyser} active={playing} maxHz={5000} />}
       </section>
     </div>
   )
