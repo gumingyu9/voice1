@@ -7,10 +7,12 @@ interface Props {
   setVowel: (v: Vowel) => void
   playing: boolean
   onTogglePlay: () => void
+  onSpeak: (text: string) => void
+  text: string
+  setText: (t: string) => void
 }
 
-export function TopBar({ onResetAll, vowel, setVowel, playing, onTogglePlay }: Props) {
-  const [text, setText] = useState('')
+export function TopBar({ onResetAll, vowel, setVowel, playing, onTogglePlay, onSpeak, text, setText }: Props) {
   const [engine, setEngine] = useState<'A' | 'B'>('A')
 
   return (
@@ -26,8 +28,11 @@ export function TopBar({ onResetAll, vowel, setVowel, playing, onTogglePlay }: P
           placeholder="단어나 문장을 입력하세요"
           aria-label="합성할 텍스트"
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing) onSpeak(text)
+          }}
         />
-        <button type="button" className="primary" disabled title="P2에서 구현">
+        <button type="button" className="primary" onClick={() => onSpeak(text)} disabled={!text.trim()} title="입력한 문장을 지금 설정으로 말하기 (Enter)">
           ▶ 재생
         </button>
 

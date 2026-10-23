@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { sourceFilterSpectrum } from '../engine/analysis'
 import type { FrameParams } from '../engine/dsp/frame'
+import type { SpeechRender } from '../engine/speech/render'
 import { VOWEL_FORMANTS, VOWELS, vowelFormants } from '../engine/mapping'
 import { player } from '../engine/player'
 import { GlottalPulseView, LiveSpectrogram, SourceFilterView, VowelChart } from '../viz'
@@ -14,6 +15,7 @@ interface Props {
   vowel: string
   playing: boolean
   frame: FrameParams
+  speech: SpeechRender | null
 }
 
 type VizTab = 'vowel' | 'pulse' | 'live'
@@ -26,7 +28,7 @@ const REFERENCE = VOWELS.map((v) => ({ vowel: v, f1: VOWEL_FORMANTS[v][0], f2: V
 
 const ALL_PARTS = Object.keys(ANATOMY_LABELS) as AnatomyPart[]
 
-export function Stage({ selectedId, onSelect, values, vowel, playing, frame }: Props) {
+export function Stage({ selectedId, onSelect, values, vowel, playing, frame, speech }: Props) {
   const [tab, setTab] = useState<VizTab>('vowel')
   const spectrum = useMemo(() => sourceFilterSpectrum(frame, 5000), [frame])
   const vowelPoints = useMemo(
@@ -42,6 +44,14 @@ export function Stage({ selectedId, onSelect, values, vowel, playing, frame }: P
 
   return (
     <div className="stage">
+      {speech && (
+        <section className="stage-box">
+          <h2>문장 분석</h2>
+          <p>
+            {speech.normalized} → [{speech.g2p.pronunciation}]
+          </p>
+        </section>
+      )}
       <section className="stage-box anatomy-box">
         <h2>해부도</h2>
         <div className={`anatomy-wrap group-${selected?.group}`}>

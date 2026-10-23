@@ -22,6 +22,45 @@ export class VoicePlayer {
     return this.ctx?.sampleRate ?? 48000
   }
 
+  private source: AudioBufferSourceNode | null = null
+
+  /** 오디오 장치 준비 (사용자 클릭 이후 호출). 렌더링 전에 실제 샘플레이트를 알기 위해 쓴다 */
+  async prepare(): Promise<number> {
+    await this.ensure()
+    await this.ctx!.resume()
+    return this.ctx!.sampleRate
+  }
+
+  /** 미리 렌더링한 문장 소리 재생. 지속 모음은 멈춘다 */
+  async playBuffer(samples: Float32Array, sampleRate: number): Promise<void> {
+    await this.prepare()
+    this.stop()
+    this.stopBuffer()
+    const ctx = this.ctx!
+    const buf = ctx.createBuffer(1, samples.length, sampleRate)
+    buf.copyToChannel(samples as Float32Array<ArrayBuffer>, 0)
+    const src = ctx.createBufferSource()
+    src.buffer = buf
+    src.connect(this.analyser!)
+    src.onended = () => {
+      if (this.source === src) {
+        this.source = null
+        this.setPlaying(false)
+      }
+    }
+    this.source = src
+    src.start()
+    this.setPlaying(true)
+  }
+
+  stopBuffer(): void {
+    if (!this.source) return
+    const src = this.source
+    this.source = null
+    src.stop()
+    this.setPlaying(false)
+  }
+
   private async ensure(): Promise<void> {
     if (this.node) return
     this.loading ??= (async () => {
@@ -68,6 +107,7 @@ export class VoicePlayer {
 
   async start(frame: FrameParams): Promise<void> {
     await this.ensure()
+    this.stopBuffer()
     await this.ctx!.resume()
     window.clearTimeout(this.stopTimer)
     this.update(frame)

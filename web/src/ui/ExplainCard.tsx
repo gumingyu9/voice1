@@ -69,7 +69,7 @@ export function ExplainCard({ selectedId, values, onCompare }: Props) {
           </button>
         ))}
       </div>
-      {p.speechOnly && <p className="hint speech-only">지속 모음에서는 효과가 없고, 단어·문장 재생(P2)에서 적용됩니다.</p>}
+      {p.speechOnly && <p className="hint speech-only">지속 모음에서는 효과가 없고, 문장 재생에서 들을 수 있습니다. 비교 듣기는 입력한 문장으로 재생합니다.</p>}
       <p className="hint">
         기본값 {formatValue(p, p.default)}
         {p.unit && ` ${p.unit}`}

@@ -38,7 +38,12 @@ export interface VowelFormants {
 
 /** 모음 + 성도 관련 파라미터 → 포먼트·대역폭 */
 export function vowelFormants(v: ParamValues, vowel: Vowel): VowelFormants {
-  const F = [...VOWEL_FORMANTS[vowel], ...UPPER]
+  return transformFormants(v, VOWEL_FORMANTS[vowel])
+}
+
+/** 성인 남성 기준 F1–F3 (모음 목표값이나 자음 전이 목표) 에 성도 관련 파라미터를 적용 */
+export function transformFormants(v: ParamValues, base: readonly number[]): VowelFormants {
+  const F = [base[0], base[1], base[2], ...UPPER]
   const B = [...BASE_BW]
 
   // 조음 명확도: 혀·턱 움직임이 작으면 모든 모음이 중립 모음 쪽으로 모인다 (로그 주파수에서 보간)
