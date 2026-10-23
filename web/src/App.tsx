@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { frameFor, type Vowel } from './engine/mapping'
 import { player } from './engine/player'
 import { PARAM_BY_ID } from './params/schema'
+import { useListening } from './state/useListening'
 import { useParams } from './state/useParams'
 import { ExplainCard } from './ui/ExplainCard'
+import { ListeningBar } from './ui/ListeningBar'
 import { ParamPanel } from './ui/ParamPanel'
 import { Stage } from './ui/Stage'
 import { TopBar } from './ui/TopBar'
@@ -13,6 +15,7 @@ export function App() {
 
   const [vowel, setVowel] = useState<Vowel>('ㅏ')
   const [playing, setPlaying] = useState(false)
+  const listening = useListening()
 
   useEffect(() => {
     player.onPlayingChange = setPlaying
@@ -42,6 +45,7 @@ export function App() {
   return (
     <div className="app">
       <TopBar onResetAll={resetAll} vowel={vowel} setVowel={setVowel} playing={playing} onTogglePlay={togglePlay} />
+      <ListeningBar settings={listening.settings} update={listening.update} />
       <main className="layout">
         <aside className="col-params" aria-label="파라미터">
           <ParamPanel

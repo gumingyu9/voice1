@@ -38,6 +38,10 @@ export class Synth {
   private periodAmp = 1
   private periodIndex = 0
   private tremorPhase = 0
+  // 청취 편의용 느린 음높이 흔들림 (cent). 사람 목소리는 완전히 일정하지 않다
+  private driftCents = 0
+  private drift = 0
+  private driftRaw = 0
   private te = 0.6
   private tiltY = 0
   private noiseHp = 0
@@ -57,6 +61,11 @@ export class Synth {
 
   setSmoothing(sec: number): void {
     this.smoothK = sec <= 0 ? 1 : 1 - Math.exp(-BLOCK / (sec * this.fs))
+  }
+
+  /** 느린 무작위 음높이 흔들림의 최대 폭 (cent). 0 이면 끔 */
+  setDrift(cents: number): void {
+    this.driftCents = cents
   }
 
   setTarget(frame: FrameParams): void {
@@ -116,7 +125,14 @@ export class Synth {
     // 떨림(비브라토/트레몰로): 주기 시작 시점의 위상으로 음높이를 정한다
     const vib = Math.pow(2, (f.tremorDepth / 1200) * Math.sin(2 * Math.PI * this.tremorPhase))
     // 보컬 프라이: 음높이를 ~45Hz 쪽으로 끌어내리고, 주기를 번갈아 길고 짧게(이중 주기)
-    let freq = (f.f0 * (1 - c) + 45 * c) * vib
+    // 느린 무작위 흔들림: 평균으로 되돌아가는 랜덤 워크(τ 0.5초)를 한 번 더 부드럽게(τ 0.3초) 거른다
+    if (this.driftCents > 0) {
+      const dt = 1 / f.f0
+      this.driftRaw += -this.driftRaw * (dt / 0.5) + 0.7 * Math.sqrt((2 * dt) / 0.5) * this.gauss()
+      this.drift += (this.driftRaw - this.drift) * (dt / 0.3)
+    } else this.drift = this.driftRaw = 0
+    const drift = Math.pow(2, (this.driftCents * this.drift) / 1200)
+    let freq = (f.f0 * (1 - c) + 45 * c) * vib * drift
     freq *= 1 + 0.15 * c * (odd ? -1 : 1)
     // local jitter = 인접 주기 차이 평균 ≈ 1.128σ
     const jit = f.jitter + 0.06 * c
