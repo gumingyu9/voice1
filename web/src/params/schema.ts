@@ -40,6 +40,8 @@ export interface ParamDef {
   /** 양 끝 의미 (예: 눌린 소리 ↔ 숨 섞인 소리). 없으면 min/max 숫자만 표시 */
   ends?: [string, string]
   advanced?: boolean
+  /** 지속 모음 모드에서는 효과가 없고 단어·문장 재생에서만 적용됨 */
+  speechOnly?: boolean
   anatomy: AnatomyPart[]
   engines: { A: EngineSupport; B: EngineSupport }
   /** 설명 카드의 "비교 듣기" 버튼 값 */
@@ -75,7 +77,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     id: 'breathGroup', group: 'power', label: '호흡 단위', unit: '음절', min: 4, max: 30, default: 14, step: 1, scale: 'linear',
-    ends: ['자주 쉼', '길게 말함'], anatomy: ['lungs'], engines: { A: 'full', B: 'full' }, compare: [5, 14, 28],
+    ends: ['자주 쉼', '길게 말함'], speechOnly: true, anatomy: ['lungs'], engines: { A: 'full', B: 'full' }, compare: [5, 14, 28],
     explain: {
       body: '한 번 숨을 들이쉬고 내쉬는 동안 말할 수 있는 길이. 폐활량과 호흡 습관.',
       acoustic: '문장 중간에 들어가는 쉼의 위치와 빈도가 달라진다.',
@@ -97,7 +99,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     id: 'f0Range', group: 'source', label: '억양 폭', unit: '반음', min: 0, max: 12, default: 5, step: 0.5, scale: 'linear',
-    ends: ['단조로움', '생동감'], anatomy: ['vocalFolds', 'larynx'], engines: { A: 'full', B: 'full' }, compare: [0, 5, 11],
+    ends: ['단조로움', '생동감'], speechOnly: true, anatomy: ['vocalFolds', 'larynx'], engines: { A: 'full', B: 'full' }, compare: [0, 5, 11],
     explain: {
       body: '말하는 동안 성대 긴장을 얼마나 크게 조절하는가 (윤상갑상근의 움직임 폭).',
       acoustic: '문장 안에서 F0가 오르내리는 범위.',
@@ -261,7 +263,7 @@ export const PARAMS: ParamDef[] = [
   // ── ④ 말투 ─────────────────────────────────────────────
   {
     id: 'rate', group: 'speech', label: '말 속도', unit: '음절/초', min: 2, max: 9, default: 5, step: 0.1, scale: 'linear',
-    anatomy: ['tongue', 'lips', 'jaw'], engines: { A: 'full', B: 'full' }, compare: [3, 5, 8],
+    speechOnly: true, anatomy: ['tongue', 'lips', 'jaw'], engines: { A: 'full', B: 'full' }, compare: [3, 5, 8],
     explain: {
       body: '혀·입술·턱을 움직이는 속도와 말하는 습관.',
       acoustic: '음절 길이가 짧아지고, 빠를수록 모음이 덜 도달해 흐려진다.',
@@ -271,7 +273,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     id: 'intonation', group: 'speech', label: '문장 끝 억양', unit: '', min: -1, max: 1, default: -0.3, step: 0.05, scale: 'linear',
-    ends: ['내림(평서)', '올림(의문)'], anatomy: ['larynx'], engines: { A: 'full', B: 'approx' }, compare: [-0.8, -0.3, 0.8],
+    ends: ['내림(평서)', '올림(의문)'], speechOnly: true, anatomy: ['larynx'], engines: { A: 'full', B: 'approx' }, compare: [-0.8, -0.3, 0.8],
     explain: {
       body: '문장 끝에서 성대 긴장을 풀거나 조이는 습관.',
       acoustic: '마지막 음절의 F0 궤적이 내려가거나 올라간다.',
@@ -281,7 +283,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     id: 'consonantForce', group: 'speech', label: '자음 세기', unit: '%', min: 0, max: 150, default: 100, step: 1, scale: 'linear',
-    anatomy: ['tongue', 'lips'], engines: { A: 'full', B: 'none' }, compare: [30, 100, 145],
+    speechOnly: true, anatomy: ['tongue', 'lips'], engines: { A: 'full', B: 'none' }, compare: [30, 100, 145],
     explain: {
       body: '혀·입술로 통로를 막는 압력과, 막았다 뗀 뒤 성대가 다시 떨기 시작하는 시점(VOT).',
       acoustic: '파열 잡음의 크기와 기식 구간의 길이. 한국어 평음(ㄱ)·경음(ㄲ)·격음(ㅋ)은 이 시점과 기식음 차이로 구별된다.',
@@ -291,7 +293,7 @@ export const PARAMS: ParamDef[] = [
   },
   {
     id: 'sibilance', group: 'speech', label: '치찰음 위치', unit: 'kHz', min: 3, max: 9, default: 6, step: 0.1, scale: 'linear',
-    ends: ['둔탁한 ㅅ', '날카로운 ㅅ'], advanced: true, anatomy: ['tongue', 'teeth'], engines: { A: 'full', B: 'approx' }, compare: [3.5, 6, 8.5],
+    ends: ['둔탁한 ㅅ', '날카로운 ㅅ'], advanced: true, speechOnly: true, anatomy: ['tongue', 'teeth'], engines: { A: 'full', B: 'approx' }, compare: [3.5, 6, 8.5],
     explain: {
       body: 'ㅅ·ㅆ를 낼 때 혀끝과 앞니 사이에 만드는 좁은 틈의 위치와 크기.',
       acoustic: '마찰 잡음이 가장 강한 주파수. 틈이 앞쪽이고 작을수록 높다.',
