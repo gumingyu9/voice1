@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { MAGMA_LUT } from './util.ts'
 
 interface Props {
   analyser: AnalyserNode | null
@@ -14,33 +15,7 @@ const SPEC_H = 190
 /** 한 프레임에 왼쪽으로 밀리는 CSS 픽셀 수 (60fps 기준 약 90px/s) */
 const SCROLL_CSS_PX = 1.5
 
-/** magma 계열 색상표 (어두운 보라 → 주황 → 밝은 노랑) 256단계 */
-const STOPS: [number, number, number, number][] = [
-  [0.0, 0, 0, 4],
-  [0.1, 20, 14, 54],
-  [0.2, 59, 15, 112],
-  [0.3, 100, 26, 128],
-  [0.4, 140, 41, 129],
-  [0.5, 183, 55, 121],
-  [0.6, 222, 73, 104],
-  [0.7, 247, 112, 92],
-  [0.8, 254, 159, 109],
-  [0.9, 254, 207, 146],
-  [1.0, 252, 253, 191],
-]
-const LUT = (() => {
-  const lut = new Uint8ClampedArray(256 * 3)
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255
-    let k = 1
-    while (k < STOPS.length - 1 && STOPS[k][0] < t) k++
-    const a = STOPS[k - 1]
-    const b = STOPS[k]
-    const u = (t - a[0]) / (b[0] - a[0])
-    for (let c = 0; c < 3; c++) lut[i * 3 + c] = a[c + 1] + (b[c + 1] - a[c + 1]) * u
-  }
-  return lut
-})()
+const LUT = MAGMA_LUT
 const BG: [number, number, number] = [LUT[0], LUT[1], LUT[2]]
 
 function fillBg(ctx: CanvasRenderingContext2D, w: number, h: number) {

@@ -40,12 +40,23 @@ export function App() {
   // 문장 재생: 실제 출력 샘플레이트로 렌더링한 뒤 재생
   const [text, setText] = useState('안녕하세요')
   const [speech, setSpeech] = useState<SpeechRender | null>(null)
+  const [spokenText, setSpokenText] = useState('')
+  const [playStartedAt, setPlayStartedAt] = useState<number | null>(null)
   const speak = async (t: string, v: ParamValues = values) => {
     if (!t.trim()) return
     const sampleRate = await player.prepare()
     const r = renderSpeech(t, v, { sampleRate, soft: listening.settings.soft })
     setSpeech(r)
-    if (r.plan.segments.some((s) => s.kind !== 'pause')) await player.playBuffer(r.audio, sampleRate)
+    setSpokenText(t)
+    if (r.plan.segments.some((s) => s.kind !== 'pause')) {
+      await player.playBuffer(r.audio, sampleRate)
+      setPlayStartedAt(performance.now())
+    }
+  }
+  const replay = async () => {
+    if (!speech) return
+    await player.playBuffer(speech.audio, speech.sampleRate)
+    setPlayStartedAt(performance.now())
   }
 
   const togglePlay = () => (playing ? player.stop() : void player.start(frame))
@@ -82,7 +93,7 @@ export function App() {
           />
         </aside>
         <section className="col-stage" aria-label="시각화">
-          <Stage selectedId={selectedId} onSelect={select} values={values} vowel={vowel} playing={playing} frame={frame} speech={speech} />
+          <Stage selectedId={selectedId} onSelect={select} values={values} vowel={vowel} playing={playing} frame={frame} speech={speech} spokenText={spokenText} onReplay={() => void replay()} playStartedAt={playStartedAt} />
         </section>
         <aside className="col-explain" aria-label="설명">
           <ExplainCard selectedId={selectedId} values={values} onCompare={compare} />

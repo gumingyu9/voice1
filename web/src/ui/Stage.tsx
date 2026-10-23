@@ -5,6 +5,7 @@ import type { SpeechRender } from '../engine/speech/render'
 import { VOWEL_FORMANTS, VOWELS, vowelFormants } from '../engine/mapping'
 import { player } from '../engine/player'
 import { GlottalPulseView, LiveSpectrogram, SourceFilterView, VowelChart } from '../viz'
+import { SpeechPanel } from './SpeechPanel'
 import { AnatomyView } from '../anatomy/AnatomyView'
 import { ANATOMY_LABELS, PARAM_BY_ID, PARAMS, type AnatomyPart, type ParamValues } from '../params/schema'
 
@@ -16,6 +17,10 @@ interface Props {
   playing: boolean
   frame: FrameParams
   speech: SpeechRender | null
+  /** 합성에 쓴 입력 문장 (정규화 전) */
+  spokenText?: string
+  onReplay: () => void
+  playStartedAt?: number | null
 }
 
 type VizTab = 'vowel' | 'pulse' | 'live'
@@ -28,7 +33,7 @@ const REFERENCE = VOWELS.map((v) => ({ vowel: v, f1: VOWEL_FORMANTS[v][0], f2: V
 
 const ALL_PARTS = Object.keys(ANATOMY_LABELS) as AnatomyPart[]
 
-export function Stage({ selectedId, onSelect, values, vowel, playing, frame, speech }: Props) {
+export function Stage({ selectedId, onSelect, values, vowel, playing, frame, speech, spokenText, onReplay, playStartedAt }: Props) {
   const [tab, setTab] = useState<VizTab>('vowel')
   const spectrum = useMemo(() => sourceFilterSpectrum(frame, 5000), [frame])
   const vowelPoints = useMemo(
@@ -45,12 +50,14 @@ export function Stage({ selectedId, onSelect, values, vowel, playing, frame, spe
   return (
     <div className="stage">
       {speech && (
-        <section className="stage-box">
-          <h2>문장 분석</h2>
-          <p>
-            {speech.normalized} → [{speech.g2p.pronunciation}]
-          </p>
-        </section>
+        <SpeechPanel
+          speech={speech}
+          text={spokenText}
+          onReplay={onReplay}
+          onSelectParam={onSelect}
+          playStartedAt={playStartedAt}
+          playing={playing}
+        />
       )}
       <section className="stage-box anatomy-box">
         <h2>해부도</h2>
